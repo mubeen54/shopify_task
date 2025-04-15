@@ -1,11 +1,11 @@
 import { Provider } from "@shopify/app-bridge-react";
-import { AppProvider, Page } from "@shopify/polaris";
+import { AppProvider } from "@shopify/polaris";
 import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import MissingApiKey from "./components/MissingApiKey";
 import ProductCreator from "./components/ProductCreator";
-
-
+import ProductForm from "./components/ProductForm";
 
 const App = () => {
     const [appBridgeConfig] = useState(() => {
@@ -29,9 +29,10 @@ const App = () => {
     return (
         <AppProvider i18n={enTranslations}>
             <Provider config={appBridgeConfig}>
-                <Page>
-                    <ProductCreator />
-                </Page>
+                <Routes>
+                    <Route path="/" element={<ProductForm />} />
+                    <Route path="/products/create" element={<ProductForm />} />
+                </Routes>
             </Provider>
         </AppProvider>
     );

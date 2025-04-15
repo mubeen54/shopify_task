@@ -14,8 +14,10 @@ import {
 } from '@shopify/polaris';
 import { useEffect, useState, useCallback } from 'react';
 import useAxios from '../hooks/useAxios';
+import { useNavigate } from 'react-router-dom';
 
 const ProductCreator = () => {
+    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -185,6 +187,22 @@ const ProductCreator = () => {
         <Frame>
             <Page title="Product List">
                 <Layout>
+                    <Layout.Section>
+                        <button
+                            onClick={() => navigate('/products/create')}
+                            style={{
+                                background: '#006fbb',
+                                color: 'white',
+                                padding: '10px 20px',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                marginBottom: '20px',
+                            }}
+                        >
+                            Add New Product
+                        </button>
+                    </Layout.Section>
                     <Layout.Section>
                         <TextField
                             label="Search"
