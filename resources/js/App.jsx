@@ -30,7 +30,7 @@ const App = () => {
         <AppProvider i18n={enTranslations}>
             <Provider config={appBridgeConfig}>
                 <Routes>
-                    <Route path="/" element={<ProductForm />} />
+                    <Route path="/" element={<ProductCreator />} />
                     <Route path="/products/create" element={<ProductForm />} />
                 </Routes>
             </Provider>
