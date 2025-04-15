@@ -1,0 +1,24 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@shopify/app-bridge-react": "^3.7.9",
+        "@shopify/polaris": "^11.21.0",
+        "@vitejs/plugin-react": "^4.3.4",
+        "axios": "^1.1.2",
+        "laravel-vite-plugin": "^0.8.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "@apollo/client": "^3.13.6",
+        "graphql": "^16.10.0",
+        "react-dropzone": "^14.3.8",
+        "react-router-dom": "^7.5.0"
+    }
+}
