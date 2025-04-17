@@ -18,7 +18,9 @@
     "dependencies": {
         "@apollo/client": "^3.13.6",
         "graphql": "^16.10.0",
+        "jquery": "^3.7.1",
         "react-dropzone": "^14.3.8",
-        "react-router-dom": "^7.5.0"
+        "react-router-dom": "^7.5.0",
+        "summernote": "^0.9.1"
     }
 }

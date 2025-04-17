@@ -4,13 +4,17 @@ import {
     IndexTable,
     Layout,
     Page,
-    Spinner,
     Text,
     TextField,
     useIndexResourceState,
     Modal,
     DropZone,
-    Thumbnail
+    Thumbnail,
+    Spinner,
+    SkeletonPage,
+    SkeletonBodyText,
+    TextContainer,
+    SkeletonDisplayText,
 } from '@shopify/polaris';
 import { useEffect, useState, useCallback } from 'react';
 import useAxios from '../hooks/useAxios';
@@ -22,7 +26,7 @@ const ProductCreator = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeModal, setActiveModal] = useState(false);
-    const [productToDelete, setProductToDelete] = useState(null);
+    const [productToDelete, setProductToDelete] = useState(false);
     const { axios } = useAxios();
 
     const [loadingEdit, setLoadingEdit] = useState(false);
@@ -66,8 +70,12 @@ const ProductCreator = () => {
 
     const handleDelete = async () => {
         setLoadingDelete(true);
+        alert(productToDelete);
         try {
-            await axios.delete(`/products/${productToDelete}`);
+            const payload = {
+                id: productToDelete,
+            };
+            await axios.post(`hhhhhhhh-delete`, payload);
             setProducts(prev => prev.filter(p => p.id !== productToDelete));
         } catch (error) {
             console.error('Failed to delete product:', error);
@@ -83,18 +91,17 @@ const ProductCreator = () => {
     const [productToEdit, setProductToEdit] = useState(null);
     const [editTitle, setEditTitle] = useState('');
     const [editImage, setEditImage] = useState('');
+    
 
     const handleEdit = async () => {
         setLoadingEdit(true);
+
         try {
             const payload = {
                 title: editTitle,
                 image_id: editImage,
             };
-            console.log('Update Payload:', payload);
-
-            await axios.put(`/products/${productToEdit.id}`, payload);
-
+            await axios.put(`/products/update`, payload);
             setProducts(prev =>
                 prev.map(p =>
                     p.id === productToEdit.id ? { ...p, title: editTitle, image: { src: editImage } } : p
@@ -109,69 +116,38 @@ const ProductCreator = () => {
             setProductToEdit(null);
             setEditTitle('');
             setEditImage('');
+            setFile(null);
         }
     };
 
-    const handleDropZoneDrop = useCallback(async (_dropFiles, acceptedFiles) => {
+    const handleImageUpload = async (file) => {
+        if (!file) {
+            alert('Please select an image file.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setLoadingEdit(true);
+        try {
+            const response = await axios.post('/hello/upload-image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setEditImage(response.data.imageUrl);
+        } catch (error) {
+            console.error('Failed to upload image:', error.response?.data || error.message);
+            alert('Failed to upload image');
+        } finally {
+            setLoadingEdit(false);
+        }
+    };
+
+    const handleDropZoneDrop = useCallback((_dropFiles, acceptedFiles) => {
         const uploadedFile = acceptedFiles[0];
         setFile(uploadedFile);
-
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            try {
-                // Step 1: Create staged upload
-                const input = [
-                    {
-                        resource: "IMAGE",
-                        filename: uploadedFile.name,
-                        mimeType: uploadedFile.type,
-                        fileSize: uploadedFile.size,
-                    },
-                ];
-                console.log('Staged Upload Input:', input);
-
-                const stagedUploadResponse = await axios.post('/staged-uploads-create', { input });
-                console.log('Staged Upload Response:', stagedUploadResponse.data);
-
-                const stagedTarget = stagedUploadResponse.data.stagedTargets[0];
-
-                // Step 2: Upload file to the staged URL
-                const formData = new FormData();
-                stagedTarget.parameters.forEach(param => {
-                    formData.append(param.name, param.value);
-                });
-                formData.append("file", uploadedFile);
-
-                const uploadResponse = await fetch(stagedTarget.url, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (!uploadResponse.ok) {
-                    const errorText = await uploadResponse.text();
-                    console.error('Staged URL Upload Error:', errorText);
-                    throw new Error('Failed to upload file to staged URL');
-                }
-
-                // Step 3: Update collection with the uploaded image
-                const collectionUpdateResponse = await axios.post('/collection-update', {
-                    input: {
-                        id: productToEdit.id,
-                        image: {
-                            src: stagedTarget.resourceUrl,
-                        },
-                    },
-                });
-                console.log('Collection Update Response:', collectionUpdateResponse.data);
-
-                setEditImage(collectionUpdateResponse.data.collection.image.originalSrc);
-            } catch (error) {
-                console.error('Failed to upload image:', error.response?.data || error.message);
-                alert('Failed to upload image');
-            }
-        };
-        reader.readAsDataURL(uploadedFile);
-    }, [axios, productToEdit]);
+        handleImageUpload(uploadedFile);
+    }, []);
 
     const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
     const fileUpload = !file && <DropZone.FileUpload />;
@@ -216,7 +192,21 @@ const ProductCreator = () => {
 
                     <Layout.Section>
                         {loading ? (
-                            <Spinner accessibilityLabel="Loading products" size="large" />
+                            <SkeletonPage primaryAction>
+                                <Layout>
+                                    <Layout.Section>
+                                        <Card sectioned>
+                                            <SkeletonBodyText />
+                                        </Card>
+                                        <Card sectioned>
+                                            <TextContainer>
+                                                <SkeletonDisplayText size="small" />
+                                                <SkeletonBodyText />
+                                            </TextContainer>
+                                        </Card>
+                                    </Layout.Section>
+                                </Layout>
+                            </SkeletonPage>
                         ) : (
                             <Card>
                                 {products.length > 0 ? (
@@ -315,7 +305,7 @@ const ProductCreator = () => {
                     </Layout.Section>
                 </Layout>
 
-                {/* Delete Product Modal */}
+                {/* Delete Modal */}
                 <Modal
                     open={activeModal}
                     onClose={() => {
@@ -338,20 +328,15 @@ const ProductCreator = () => {
                             },
                         },
                     ]}
-                >
-                    <Modal.Section>
-                        <Text as="p">This action cannot be undone.</Text>
-                    </Modal.Section>
-                </Modal>
+                />
 
-                {/* Edit Product Modal */}
+                {/* Edit Modal */}
                 <Modal
                     open={editModalActive}
                     onClose={() => {
                         setEditModalActive(false);
                         setProductToEdit(null);
-                        setEditTitle('');
-                        setEditImage('');
+                        setFile(null);
                     }}
                     title="Edit Product"
                     primaryAction={{
@@ -365,39 +350,35 @@ const ProductCreator = () => {
                             onAction: () => {
                                 setEditModalActive(false);
                                 setProductToEdit(null);
-                                setEditTitle('');
-                                setEditImage('');
+                                setFile(null);
                             },
                         },
                     ]}
                 >
                     <Modal.Section>
                         <TextField
-                            label="Product Title"
+                            label="Title"
                             value={editTitle}
                             onChange={setEditTitle}
-                            autoFocus
+                            autoComplete="off"
                         />
-                        <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                            {editImage && (
-                                <img
-                                    src={editImage}
-                                    alt="Product Preview"
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '200px',
-                                        objectFit: 'contain',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        padding: '5px',
-                                    }}
-                                />
-                            )}
-                            <DropZone onDrop={handleDropZoneDrop} accept="image/*" type="image">
-                                {uploadedFile}
-                                {fileUpload}
-                            </DropZone>
-                        </div>
+                        <br />
+                        <DropZone
+                            allowMultiple={false}
+                            accept="image/*"
+                            type="image"
+                            onDrop={handleDropZoneDrop}
+                        >
+                            {uploadedFile}
+                            {fileUpload}
+                        </DropZone>
+                        {editImage && (
+                            <img
+                                src={editImage}
+                                alt="Uploaded"
+                                style={{ marginTop: 10, width: 100, height: 100, objectFit: 'cover' }}
+                            />
+                        )}
                     </Modal.Section>
                 </Modal>
             </Page>

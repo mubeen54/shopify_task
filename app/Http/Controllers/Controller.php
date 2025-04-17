@@ -54,18 +54,18 @@ class ProductController extends Controller
     }
 
 
-    public function destroy($id)
-    {
-        $shop = Auth::user();
+    // public function destroy($id)
+    // {
+    //     $shop = Auth::user();
 
-        $response = $shop->api()->rest('DELETE', "/admin/api/2023-01/products/{$id}.json");
+    //     $response = $shop->api()->rest('DELETE', "/admin/api/2023-01/products/{$id}.json");
 
-        if ($response['errors']) {
-            return response()->json(['message' => 'Failed to delete product'], 500);
-        }
+    //     if ($response['errors']) {
+    //         return response()->json(['message' => 'Failed to delete product'], 500);
+    //     }
 
-        return response()->json(['message' => 'Product deleted successfully']);
-    }
+    //     return response()->json(['message' => 'Product deleted successfully']);
+    // }
 
     public function update(Request $request, $id)
     {

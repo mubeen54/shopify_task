@@ -19,8 +19,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['verify.shopify'])->group(function () {
     Route::view('/', 'app')->name('home');
     Route::get('/products', [ProductController::class, 'index']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/product/create', [ProductController::class, 'create']);
     Route::post('/product/store', [ProductController::class, 'storeProduct']);
     Route::post('/hello/upload-image', [ProductController::class, 'uploadImage']);
+    Route::post('hhhhhhhh-delete', [ProductController::class, 'deleteProduct']);
+    Route::put('/products/update', [ProductController::class, 'updateProduct']);
 });
